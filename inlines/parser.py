@@ -2,7 +2,7 @@ from django.template import TemplateSyntaxError
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.http import Http404
-from django.utils.encoding import smart_unicode
+from django.utils.encoding import smart_text
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
