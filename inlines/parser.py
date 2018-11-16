@@ -8,6 +8,8 @@ from django.utils.safestring import mark_safe
 
 
 def inlines(value, return_list=False):
+    print("VALUE:")
+    print(value)
     try:
         print("7")
         from bs4 import BeautifulSoup
@@ -43,6 +45,8 @@ def inlines(value, return_list=False):
                 print(inline_template)
             else:
                 inline_template = ''
+            print("INLINE")
+            print(str(inline))
             value = value.replace(str(inline), inline_template)
         print("12")
         print(mark_safe(str(value)))
