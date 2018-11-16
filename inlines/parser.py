@@ -109,12 +109,14 @@ def render_inline(inline):
             context['settings'] = settings
             print(context)
         except model.DoesNotExist:
+            print("MODEL AINT REAL")
             if settings.DEBUG:
                 raise model.DoesNotExist("%s with pk of '%s' does not exist"
                                          % (model_name, inline['id']))
             else:
                 return ''
         except:
+            print("ITS SLOW B")
             if settings.DEBUG:
                 raise TemplateSyntaxError("The <inline> id attribute is "
                                           "missing or invalid.")
