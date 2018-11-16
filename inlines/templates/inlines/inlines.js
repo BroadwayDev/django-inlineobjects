@@ -61,7 +61,7 @@
                 var align_attribute = '';
             }
 
-            var inline = '<inline type="'+type.replace('/', '.')+'" id="'+id+'"'+size_attribute+''+align_attribute+'>'+'</inline>;
+            var inline = '<inline type="'+type.replace('/', '.')+'" id="'+id+'"'+size_attribute+''+align_attribute+' />';
             var textarea = document.getElementById('id_{{ field }}');
             var scrollPos = textarea.scrollTop;
             var strPos = 0;

@@ -15,7 +15,7 @@ def inlines(value, return_list=False):
         print("8")
         pass
 
-    content = BeautifulSoup(value, "xml")
+    content = BeautifulSoup(value, "lxml")
 
     # Return a list of inline objects found in the value.
     if return_list:
