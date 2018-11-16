@@ -36,7 +36,7 @@ def inlines(value, return_list=False):
         print("11")
         for inline in content.findAll('inline'):
             inline = inline[:-10]
-            self_closing_inline = inline[:-10] + " />"
+            self_closing_inline = str(inline)[:-10] + " />"
             print(self_closing_inline)
             rendered_inline = render_inline(inline)
             if rendered_inline:
@@ -50,7 +50,7 @@ def inlines(value, return_list=False):
                 inline_template = ''
             print("INLINE")
             print(str(self_closing_inline))
-            value = value.replace(str(self_closing_inline), inline_template)
+            value = value.replace(self_closing_inline, inline_template)
         print("12")
         print(mark_safe(str(value)))
         return mark_safe(str(value))
