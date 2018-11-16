@@ -9,11 +9,11 @@ from django.utils.safestring import mark_safe
 
 def inlines(value, return_list=False):
     try:
-        from BeautifulSoup import BeautifulStoneSoup
+        from bs4 import BeautifulSoup
     except ImportError:
-        from beautifulsoup import BeautifulStoneSoup
+        pass
 
-    content = BeautifulStoneSoup(value, selfClosingTags=['inline', 'img', 'br',
+    content = BeautifulSoup(value, selfClosingTags=['inline', 'img', 'br',
                                                          'input', 'meta',
                                                          'link', 'hr'])
 
