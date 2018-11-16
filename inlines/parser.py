@@ -35,7 +35,6 @@ def inlines(value, return_list=False):
     else:
         print("11")
         for inline in content.findAll('inline'):
-            inline = inline[:-10]
             self_closing_inline = str(inline)[:-10] + " />"
             print(self_closing_inline)
             rendered_inline = render_inline(inline)
