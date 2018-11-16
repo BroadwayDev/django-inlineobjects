@@ -49,6 +49,8 @@ def inlines(value, return_list=False):
                 inline_template = ''
             print("INLINE")
             print(str(self_closing_inline))
+            print("THIS A TEST YAHURRDDDD")
+            print(value.replace(self_closing_inline, inline_template))
             value = value.replace(self_closing_inline, inline_template)
         print("12")
         print(mark_safe(str(value)))
