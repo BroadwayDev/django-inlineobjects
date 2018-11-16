@@ -35,6 +35,7 @@ def inlines(value, return_list=False):
             else:
                 inline_template = ''
             value = value.replace(str(inline), inline_template)
+            print(mark_safe(unicode(value)))
         return mark_safe(unicode(value))
 
 
