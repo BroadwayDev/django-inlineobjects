@@ -19,19 +19,27 @@ def inlines(value, return_list=False):
 
     # Return a list of inline objects found in the value.
     if return_list:
+        print("1")
         inline_list = []
         for inline in content.findAll('inline'):
             rendered_inline = render_inline(inline)
             inline_list.append(rendered_inline['context'])
+        print("2")
+        print(inline_list)
         return inline_list
 
     # Replace inline markup in the value with rendered inline templates.
     else:
+        print("3")
         for inline in content.findAll('inline'):
             rendered_inline = render_inline(inline)
             if rendered_inline:
+                print("4")
+                print(rendered_inline)
                 inline_template = render_to_string(rendered_inline['template'],
                                                    rendered_inline['context'])
+                print("5")
+                print(inline_template)
             else:
                 inline_template = ''
             value = value.replace(str(inline), inline_template)
@@ -68,15 +76,22 @@ def render_inline(inline):
 
     # Create the context with all the attributes in the inline markup.
     context = dict((attr[0], attr[1]) for attr in inline.attrs)
-
+    print("6")
+    print(context)
     # If multiple IDs were specified, build a list of all requested objects
     # and add them to the context.
     try:
         try:
+            print("7")
             id_list = [int(i) for i in inline['ids'].split(',')]
+            print(id_list)
             obj_list = model.objects.in_bulk(id_list)
             obj_list = list(obj_list[int(i)] for i in id_list)
+            print("8")
+            print(obj_list)
             context['object_list'] = obj_list
+            print("9")
+            print(context)
         except ValueError:
             if settings.DEBUG:
                 raise ValueError("The <inline> ids attribute is missing or "
@@ -88,9 +103,11 @@ def render_inline(inline):
     # to the context.
     except KeyError:
         try:
+            print("10")
             obj = model.objects.get(pk=inline['id'])
             context['object'] = obj
             context['settings'] = settings
+            print(context)
         except model.DoesNotExist:
             if settings.DEBUG:
                 raise model.DoesNotExist("%s with pk of '%s' does not exist"
