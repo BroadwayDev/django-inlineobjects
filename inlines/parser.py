@@ -16,6 +16,7 @@ def inlines(value, return_list=False):
     content = BeautifulStoneSoup(value, selfClosingTags=['inline', 'img', 'br',
                                                          'input', 'meta',
                                                          'link', 'hr'])
+    print(content)
 
     # Return a list of inline objects found in the value.
     if return_list:
