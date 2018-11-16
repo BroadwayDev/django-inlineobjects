@@ -15,7 +15,7 @@ def inlines(value, return_list=False):
         print("8")
         pass
 
-    content = BeautifulSoup(value, "html.parser")
+    content = BeautifulSoup(value, "xml")
 
     # Return a list of inline objects found in the value.
     if return_list:
