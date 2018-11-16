@@ -68,7 +68,10 @@ def render_inline(inline):
         content_type = ContentType.objects.get(app_label=app_label,
                                                model=model_name)
         model = content_type.model_class()
+        print(content_type)
+        print(model)
     except ContentType.DoesNotExist:
+        print("CONTENT DOES NOT EXIST")
         if settings.DEBUG:
             raise TemplateSyntaxError("Inline ContentType not found.")
         else:
