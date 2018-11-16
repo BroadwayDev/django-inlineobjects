@@ -42,7 +42,7 @@ def inlines(value, return_list=False):
                 inline_template = ''
             value = value.replace(str(inline), inline_template)
         print("12")
-        print mark_safe(str(value))
+        print(mark_safe(str(value)))
         return mark_safe(str(value))
 
 
