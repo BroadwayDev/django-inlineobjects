@@ -35,8 +35,12 @@ def inlines(value, return_list=False):
         for inline in content.findAll('inline'):
             rendered_inline = render_inline(inline)
             if rendered_inline:
+                print("RENDERED_INLINE")
+                print(rendered_inline)
                 inline_template = render_to_string(rendered_inline['template'],
                                                    rendered_inline['context'])
+                print("INLINE_TEMPLATE")
+                print(inline_template)
             else:
                 inline_template = ''
             value = value.replace(str(inline), inline_template)
