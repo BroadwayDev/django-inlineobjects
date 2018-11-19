@@ -35,8 +35,16 @@ def inlines(value, return_list=False):
     else:
         print("11")
         for inline in content.findAll('inline'):
-            self_closing_inline = str(inline)[:-10] + " />"
-            print(self_closing_inline)
+            new_inline = "<inline "
+            for attr in inline.attrs:
+                new_inline+= str(attr) + "=\"" + str(inline[attr]) + "\" "
+                print("NEW INLINE")
+                print(new_inline)
+            new_inline += "/>"
+            print("FINAL NEWLINE")
+            print(new_inline)
+            # self_closing_inline = str(new_inline)[:-10] + "/>"
+            # print(self_closing_inline)
             rendered_inline = render_inline(inline)
             if rendered_inline:
                 print("RENDERED_INLINE")
@@ -48,10 +56,10 @@ def inlines(value, return_list=False):
             else:
                 inline_template = ''
             print("INLINE")
-            print(str(self_closing_inline))
+            print(new_inline)
             print("THIS A TEST YAHURRDDDD")
-            print(value.replace(self_closing_inline, inline_template))
-            value = value.replace(self_closing_inline, inline_template)
+            print(value.replace(new_inline, inline_template))
+            value = value.replace(new_inline, inline_template)
         print("12")
         print(mark_safe(str(value)))
         return mark_safe(str(value))
