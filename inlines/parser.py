@@ -2,20 +2,18 @@ from django.template import TemplateSyntaxError
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.http import Http404
-from django.utils.encoding import smart_unicode
+from django.utils.encoding import smart_text
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
 
 def inlines(value, return_list=False):
     try:
-        from BeautifulSoup import BeautifulStoneSoup
+        from bs4 import BeautifulSoup
     except ImportError:
-        from beautifulsoup import BeautifulStoneSoup
+        pass
 
-    content = BeautifulStoneSoup(value, selfClosingTags=['inline', 'img', 'br',
-                                                         'input', 'meta',
-                                                         'link', 'hr'])
+    content = BeautifulSoup(value, "lxml")
 
     # Return a list of inline objects found in the value.
     if return_list:
@@ -28,14 +26,18 @@ def inlines(value, return_list=False):
     # Replace inline markup in the value with rendered inline templates.
     else:
         for inline in content.findAll('inline'):
+            new_inline = "<inline "
+            for attr in inline.attrs:
+                new_inline+= str(attr) + "=\"" + str(inline[attr]) + "\" "
+            new_inline += "/>"
             rendered_inline = render_inline(inline)
             if rendered_inline:
                 inline_template = render_to_string(rendered_inline['template'],
                                                    rendered_inline['context'])
             else:
                 inline_template = ''
-            value = value.replace(str(inline), inline_template)
-        return mark_safe(unicode(value))
+            value = value.replace(new_inline, inline_template)
+        return mark_safe(str(value))
 
 
 def render_inline(inline):
@@ -66,7 +68,10 @@ def render_inline(inline):
             return ''
 
     # Create the context with all the attributes in the inline markup.
-    context = dict((attr[0], attr[1]) for attr in inline.attrs)
+    context = dict()
+    # context = dict((attr[0], attr[1]) for attr in inline.attrs)
+    for attr in list(inline.attrs):
+        context[attr] = inline[attr]
 
     # If multiple IDs were specified, build a list of all requested objects
     # and add them to the context.
