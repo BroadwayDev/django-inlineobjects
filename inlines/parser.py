@@ -95,7 +95,7 @@ def render_inline(inline):
     context = dict()
     # context = dict((attr[0], attr[1]) for attr in inline.attrs)
     print(list(inline.attrs))
-    for attr in reversed(list(inline.attrs)):
+    for attr in list(inline.attrs):
         print(attr)
         print(inline[attr])
         context[attr] = inline[attr]
