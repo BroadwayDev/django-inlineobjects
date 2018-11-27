@@ -69,7 +69,8 @@ def render_inline(inline):
 
     # Create the context with all the attributes in the inline markup.
     context = dict()
-    # context = dict((attr[0], attr[1]) for attr in inline.attrs)
+    
+    context['type'] = inline['type']
     for attr in list(inline.attrs):
         context[attr] = inline[attr]
 
