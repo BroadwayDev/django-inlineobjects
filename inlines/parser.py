@@ -30,6 +30,7 @@ def inlines(value, return_list=False):
             for attr in inline.attrs:
                 new_inline+= str(attr) + "=\"" + str(inline[attr]) + "\" "
             new_inline += "/>"
+            print(new_inline)
             # self_closing_inline = str(new_inline)[:-10] + "/>"
             rendered_inline = render_inline(inline)
             if rendered_inline:
@@ -37,6 +38,7 @@ def inlines(value, return_list=False):
                                                    rendered_inline['context'])
             else:
                 inline_template = ''
+            print(value)
             value = value.replace(new_inline, inline_template)
         return mark_safe(str(value))
 
@@ -75,6 +77,9 @@ def render_inline(inline):
     for attr in list(inline.attrs):
         if attr != 'type':
             context[attr] = inline[attr]
+        print(context)
+    print("TEST")
+    print(context)
 
     # If multiple IDs were specified, build a list of all requested objects
     # and add them to the context.
