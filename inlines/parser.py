@@ -27,10 +27,13 @@ def inlines(value, return_list=False):
     # Replace inline markup in the value with rendered inline templates.
     else:
         for inline in content.findAll('inline'):
+            print("inline")
+            print(inline)
             new_inline = "<inline "
             for attr in inline.attrs:
                 new_inline+= str(attr) + "=\"" + str(inline[attr]) + "\" "
             new_inline += "/>"
+            print("New inline")
             print(new_inline)
             # self_closing_inline = str(new_inline)[:-10] + "/>"
             rendered_inline = render_inline(inline)
@@ -77,6 +80,8 @@ def render_inline(inline):
     context['type'] = inline['type']
     context['id'] = inline['id']
     context['align'] = inline['align']
+    print("context")
+    print(context)
     # for attr in list(inline.attrs):
     #     if attr != 'type':
     #         context[attr] = inline[attr]
