@@ -14,7 +14,7 @@ def inlines(value, return_list=False):
     except ImportError:
         pass
 
-    content = BeautifulSoup(value, 'xml')
+    content = BeautifulSoup(value, 'html5lib')
     print("CONTENT:")
     print(content)
     print("VALUE")
@@ -31,6 +31,8 @@ def inlines(value, return_list=False):
     # Replace inline markup in the value with rendered inline templates.
     else:
         for inline in content.findAll('inline'):
+            print("INLINE")
+            print(inline)
             new_inline = "<inline "
             for attr in inline.attrs:
                 print("attr: ")
