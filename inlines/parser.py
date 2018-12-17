@@ -8,8 +8,6 @@ from django.utils.safestring import mark_safe
 
 
 def inlines(value, return_list=False):
-    print("VALUE:")
-    print(value)
     try:
         from bs4 import BeautifulSoup
     except ImportError:
@@ -74,12 +72,8 @@ def render_inline(inline):
     context = dict()
     # context = dict((attr[0], attr[1]) for attr in inline.attrs)
     context['type'] = inline['type']
-    print("###")
-    print(context)
     for attr in list(inline.attrs):
         context[attr] = inline[attr]
-    print("4")
-    print(context)
 
     # If multiple IDs were specified, build a list of all requested objects
     # and add them to the context.
