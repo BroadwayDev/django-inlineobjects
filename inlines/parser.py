@@ -15,7 +15,7 @@ def inlines(value, return_list=False):
     except ImportError:
         pass
 
-    content = BeautifulSoup(value, 'html5lib')
+    content = BeautifulSoup(value, 'html_parser')
     print("CONTENT:")
     print(content)
     print("VALUE")
