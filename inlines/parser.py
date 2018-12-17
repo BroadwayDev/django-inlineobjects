@@ -5,6 +5,7 @@ from django.http import Http404
 from django.utils.encoding import smart_text
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from collections import OrderedDict
 
 
 def inlines(value, return_list=False):
@@ -71,7 +72,7 @@ def render_inline(inline):
             return ''
 
     # Create the context with all the attributes in the inline markup.
-    context = dict()
+    context = OrderedDict()
     # context = dict((attr[0], attr[1]) for attr in inline.attrs)
     context['type'] = inline['type']
     context['id'] = inline['id']
