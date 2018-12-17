@@ -16,10 +16,6 @@ def inlines(value, return_list=False):
         pass
 
     content = BeautifulSoup(value, 'html5lib')
-    print("CONTENT:")
-    print(content)
-    print("VALUE")
-    print(value)
 
     # Return a list of inline objects found in the value.
     if return_list:
@@ -32,16 +28,15 @@ def inlines(value, return_list=False):
     # Replace inline markup in the value with rendered inline templates.
     else:
         for inline in content.findAll('inline'):
-            print("INLINE")
-            print(inline)
+            #BS4 no longer supports self closing tags as a param, so after experimenting with different parsers, html5lib was the closest to what we wanted.
+            #However, it would sort the attributes in alphabetical order so when we try to do value.replace() it won't replace the <inline> tag unless they match exactly
+            #Hence, i create 'new_inline' and make sure that it is constructed exactly how it is arranged in value.  
             new_inline = "<inline "
             new_inline+= 'type' + "=\"" + str(inline['type']) + "\" "
             new_inline+= 'id' + "=\"" + str(inline['id']) + "\" "
             new_inline+= 'align' + "=\"" + str(inline['align']) + "\" "
             new_inline += "/>"
-            print("NEW INLINE")
-            print(new_inline)
-            # self_closing_inline = str(new_inline)[:-10] + "/>"
+
             rendered_inline = render_inline(inline)
             if rendered_inline:
                 inline_template = render_to_string(rendered_inline['template'],
