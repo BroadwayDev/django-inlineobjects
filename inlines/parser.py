@@ -6,7 +6,7 @@ from django.utils.encoding import smart_text
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from collections import OrderedDict
-import urllib
+
 
 
 def inlines(value, return_list=False):
@@ -15,7 +15,7 @@ def inlines(value, return_list=False):
     except ImportError:
         pass
 
-    content = BeautifulSoup(value.smart_text, 'xml')
+    content = BeautifulSoup(value, 'html5lib')
     print("CONTENT:")
     print(content)
     print("VALUE")
@@ -35,11 +35,12 @@ def inlines(value, return_list=False):
             print("INLINE")
             print(inline)
             new_inline = "<inline "
-            for attr in inline.attrs:
-                print("attr: ")
-                print(attr)
-                new_inline+= str(attr) + "=\"" + str(inline[attr]) + "\" "
+            new_inline+= 'type' + "=\"" + str(inline['type']) + "\" "
+            new_inline+= 'id' + "=\"" + str(inline['id']) + "\" "
+            new_inline+= 'align' + "=\"" + str(inline['align']) + "\" "
             new_inline += "/>"
+            print("NEW INLINE")
+            print(new_inline)
             # self_closing_inline = str(new_inline)[:-10] + "/>"
             rendered_inline = render_inline(inline)
             if rendered_inline:
