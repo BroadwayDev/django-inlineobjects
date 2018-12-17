@@ -6,6 +6,7 @@ from django.utils.encoding import smart_text
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from collections import OrderedDict
+import urllib
 
 
 def inlines(value, return_list=False):
