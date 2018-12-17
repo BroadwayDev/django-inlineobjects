@@ -14,7 +14,8 @@ def inlines(value, return_list=False):
     except ImportError:
         pass
 
-    content = BeautifulSoup(value)
+    content = BeautifulSoup(value, 'xml')
+    print(content)
 
     # Return a list of inline objects found in the value.
     if return_list:
