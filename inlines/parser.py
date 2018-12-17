@@ -73,7 +73,8 @@ def render_inline(inline):
     # context = dict((attr[0], attr[1]) for attr in inline.attrs)
     context['type'] = inline['type']
     for attr in list(inline.attrs):
-        context[attr] = inline[attr]
+        if attr != 'type':
+            context[attr] = inline[attr]
 
     # If multiple IDs were specified, build a list of all requested objects
     # and add them to the context.
