@@ -29,6 +29,8 @@ def inlines(value, return_list=False):
         for inline in content.findAll('inline'):
             new_inline = "<inline "
             for attr in inline.attrs:
+                print("attr: ")
+                print(attr)
                 new_inline+= str(attr) + "=\"" + str(inline[attr]) + "\" "
             new_inline += "/>"
             # self_closing_inline = str(new_inline)[:-10] + "/>"
