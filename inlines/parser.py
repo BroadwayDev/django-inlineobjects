@@ -39,7 +39,6 @@ def inlines(value, return_list=False):
             except KeyError:
                 pass
             new_inline += "/>"
-            print(new_inline)
 
             rendered_inline = render_inline(inline)
             if rendered_inline:
