@@ -32,10 +32,14 @@ def inlines(value, return_list=False):
             #However, it would sort the attributes in alphabetical order so when we try to do value.replace() it won't replace the <inline> tag unless they match exactly
             #Hence, i create 'new_inline' and make sure that it is constructed exactly how it is arranged in value.  
             new_inline = "<inline "
-            new_inline+= 'type' + "=\"" + str(inline['type']) + "\" "
-            new_inline+= 'id' + "=\"" + str(inline['id']) + "\" "
-            new_inline+= 'align' + "=\"" + str(inline['align']) + "\" "
+            new_inline+= 'type' + "=\"" + str(inline['type']) + "\" " #type is always going to be required
+            new_inline+= 'id' + "=\"" + str(inline['id']) + "\" " #As will ID 
+            try:
+                new_inline+= 'align' + "=\"" + str(inline['align']) + "\" "
+            except KeyError:
+                pass
             new_inline += "/>"
+            print(new_inline)
 
             rendered_inline = render_inline(inline)
             if rendered_inline:
