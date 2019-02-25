@@ -82,7 +82,10 @@ def render_inline(inline):
     context = OrderedDict()
     context['type'] = inline['type']
     context['id'] = inline['id']
-    context['align'] = inline['align']
+    try:
+        context['align'] = inline['align']
+    except KeyError:
+        pass 
 
     # If multiple IDs were specified, build a list of all requested objects
     # and add them to the context.
