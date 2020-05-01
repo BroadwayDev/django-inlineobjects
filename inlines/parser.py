@@ -115,6 +115,7 @@ class InlineRenderer(object):
                 'Failed to find object for tag: %s' % self.inline
             )
         self.context['object'] = obj
+        print("4 " + obj)
         return obj
 
     def render(self):
@@ -131,6 +132,7 @@ class InlineRenderer(object):
             else:
                 self.lookup_object()
             rendered_template = self.render_template()
+            print("3 " + rendered_template)
             # Store the rendered template in the cache.
             if settings.INLINES_CACHE_TIMEOUT > 0:
                 cache.set(
@@ -158,10 +160,12 @@ class ContentParser(object):
         for inline in self.inlines:
             try:
                 rendered_inline = InlineRenderer(inline, self.reset_cache).render()
+                print("1 " + rendered_inline)
             except Exception as e:
                 if settings.INLINES_DEBUG:
                     raise TemplateSyntaxError('Failed to render inline: %s' % e)
                 else:
                     rendered_inline = ''
             self.soup_string = self.soup_string.replace(str(inline), rendered_inline)
+            print("2 " + self.soup_string)
         return mark_safe(self.soup_string)

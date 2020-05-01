@@ -41,6 +41,7 @@ def render_inlines(value):
     It would be wise to anticipate both object_list and object unless
     you know for sure one or the other will only be present.
     """
+    print(value)
     return ContentParser(value).render()
 
 
