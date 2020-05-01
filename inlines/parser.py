@@ -1,111 +1,167 @@
+import hashlib
+
+from builtins import next, str, object
+
+from bs4 import BeautifulSoup
+from bs4.element import Tag
+from django.apps import apps
+from django.core.cache import cache
+from django.db.models import Case, When
 from django.template import TemplateSyntaxError
-from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
-from django.http import Http404
-from django.utils.encoding import smart_unicode
+from django.template.defaultfilters import slugify
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from inlines import settings
 
 
-def inlines(value, return_list=False):
-    try:
-        from BeautifulSoup import BeautifulStoneSoup
-    except ImportError:
-        from beautifulsoup import BeautifulStoneSoup
+class InlineRenderer(object):
 
-    content = BeautifulStoneSoup(value, selfClosingTags=['inline', 'img', 'br',
-                                                         'input', 'meta',
-                                                         'link', 'hr'])
+    def __init__(self, inline, reset_cache=False):
+        self.inline = inline
+        self.reset_cache = reset_cache
+        self.clean()
+        self.get_app_model()
+        self.get_lookup_key()
+        self.get_lookup_value()
+        self.get_template_name_suffix()
+        self.build_context()
+        self.build_cache_key()
 
-    # Return a list of inline objects found in the value.
-    if return_list:
-        inline_list = []
-        for inline in content.findAll('inline'):
-            rendered_inline = render_inline(inline)
-            inline_list.append(rendered_inline['context'])
-        return inline_list
+    def clean(self):
+        if not isinstance(self.inline, Tag):
+            raise ValueError('Inline must be bs4.element.Tag')
+        if settings.INLINES_ALLOWED_TYPES and self.inline['type'] not in settings.INLINES_ALLOWED_TYPES:
+            raise ValueError('Inline tag does not have an allowed type: %s' % self.inline)
 
-    # Replace inline markup in the value with rendered inline templates.
-    else:
-        for inline in content.findAll('inline'):
-            rendered_inline = render_inline(inline)
-            if rendered_inline:
-                inline_template = render_to_string(rendered_inline['template'],
-                                                   rendered_inline['context'])
-            else:
-                inline_template = ''
-            value = value.replace(str(inline), inline_template)
-        return mark_safe(unicode(value))
+    def get_app_model(self):
+        # Look for inline type, 'app.model'
+        self.app_label, self.model_name = self.inline['type'].split('.')
+        return self.app_label, self.model_name
 
+    def get_lookup_key(self):
+        self.lookup_key = next((x for x in settings.INLINES_LOOKUP_KEYS if x in self.inline.attrs), None)
+        if not self.lookup_key:
+            raise ValueError('Failed to find any supported lookup key in tag: %s' % self.inline)
+        return self.lookup_key
 
-def render_inline(inline):
-    """
-    Replace inline markup with template markup that matches the
-    appropriate app and model.
-    """
-
-    # Look for inline type, 'app.model'
-    try:
-        app_label, model_name = inline['type'].split('.')
-    except:
-        if settings.DEBUG:
-            raise TemplateSyntaxError("Couldn't find the attribute 'type' in "
-                                       "the <inline> tag.")
+    def get_lookup_value(self):
+        self.lookup_value = self.inline[self.lookup_key]
+        # If the value contains a comma, treat it as a list of multiple
+        # objects.
+        if ',' in self.lookup_value:
+            self.lookup_is_list = True
         else:
-            return ''
+            self.lookup_is_list = False
+        return self.lookup_value
 
-    # Look for content type
-    try:
-        content_type = ContentType.objects.get(app_label=app_label,
-                                               model=model_name)
-        model = content_type.model_class()
-    except ContentType.DoesNotExist:
-        if settings.DEBUG:
-            raise TemplateSyntaxError("Inline ContentType not found.")
-        else:
-            return ''
+    def get_template_name_suffix(self):
+        self.template_name_suffix = ''
+        self.template_key = next((x for x in ['template', 'template_name_suffix'] if x in self.inline.attrs), None)
+        if self.template_key:
+            self.template_name_suffix = '_%s' % self.inline[self.template_key]
+        return self.template_name_suffix
 
-    # Create the context with all the attributes in the inline markup.
-    context = dict((attr[0], attr[1]) for attr in inline.attrs)
+    def build_cache_key(self):
+        self.cache_key_string = 'inlines:%s' % str(self.inline.attrs)
+        self.cache_key = hashlib.md5(self.cache_key_string.encode('utf-8')).hexdigest()
+        return self.cache_key
 
-    # If multiple IDs were specified, build a list of all requested objects
-    # and add them to the context.
-    try:
+    def get_model(self):
+        self.model = apps.get_model(self.app_label, self.model_name)
+        return self.model
+
+    def get_manager(self):
+        self.manager_name = 'all'
+        if settings.INLINES_MANAGERS and self.inline['type'] in settings.INLINES_MANAGERS:
+            self.manager_name = settings.INLINES_MANAGERS[self.inline['type']]
+        self.manager = getattr(self.model.objects, self.manager_name)
+        return self.manager
+
+    def build_context(self):
+        # Create the context with all the attributes in the inline markup.
+        self.context = self.inline.attrs.copy()
+        return self.context
+
+    def render_template(self):
+        template = [
+            "%s/inlines/%s%s.html" % (self.app_label, self.model_name, self.template_name_suffix),
+            "inlines/%s_%s%s.html" % (self.app_label, self.model_name, self.template_name_suffix),
+            "inlines/default.html",
+        ]
+        return render_to_string(template, self.context)
+
+    def lookup_object_list(self):
+        lookup_list = [x.strip() for x in self.lookup_value.split(',')]
+        # Build a conditional to sort the objects, such that they are returned
+        # in the same order that they were specified in the tag.
+        ordering = Case(*[When(then=index, **{self.lookup_key: x}) for index, x in enumerate(lookup_list)])
+        obj_list = self.manager().filter(
+            **{'%s__in' % self.lookup_key: lookup_list}
+        ).order_by(
+            ordering
+        )
+        if not obj_list:
+            raise ValueError(
+                'Failed to find any objects for tag: %s' % self.inline
+            )
+        self.context['object_list'] = obj_list
+        return obj_list
+
+    def lookup_object(self):
         try:
-            id_list = [int(i) for i in inline['ids'].split(',')]
-            obj_list = model.objects.in_bulk(id_list)
-            obj_list = list(obj_list[int(i)] for i in id_list)
-            context['object_list'] = obj_list
-        except ValueError:
-            if settings.DEBUG:
-                raise ValueError("The <inline> ids attribute is missing or "
-                                 "invalid.")
-            else:
-                return ''
+            obj = self.manager().get(**{self.lookup_key: self.lookup_value})
+        except self.model.DoesNotExist:
+            raise ValueError(
+                'Failed to find object for tag: %s' % self.inline
+            )
+        self.context['object'] = obj
+        return obj
 
-    # If only one ID was specified, retrieve the requested object and add it
-    # to the context.
-    except KeyError:
-        try:
-            obj = model.objects.get(pk=inline['id'])
-            context['object'] = obj
-            context['settings'] = settings
-        except model.DoesNotExist:
-            if settings.DEBUG:
-                raise model.DoesNotExist("%s with pk of '%s' does not exist"
-                                         % (model_name, inline['id']))
+    def render(self):
+        rendered_template = None
+        # Attempt to get the rendered template from the cache.
+        if not self.reset_cache and settings.INLINES_CACHE_TIMEOUT > 0:
+            rendered_template = cache.get(self.cache_key)
+        # If that failed, get the objects and render the template normally.
+        if not rendered_template:
+            self.get_model()
+            self.get_manager()
+            if self.lookup_is_list:
+                self.lookup_object_list()
             else:
-                return ''
-        except:
-            if settings.DEBUG:
-                raise TemplateSyntaxError("The <inline> id attribute is "
-                                          "missing or invalid.")
-            else:
-                return ''
+                self.lookup_object()
+            rendered_template = self.render_template()
+            # Store the rendered template in the cache.
+            if settings.INLINES_CACHE_TIMEOUT > 0:
+                cache.set(
+                    self.cache_key,
+                    rendered_template,
+                    settings.INLINES_CACHE_TIMEOUT,
+                )
+        return rendered_template
 
-    # Set the name of the template that should be used to render the inline.
-    template = ["inlines/%s_%s.html" % (app_label, model_name),
-                "inlines/default.html"]
 
-    # Return the template name and the context.
-    return {'template': template, 'context': context}
+class ContentParser(object):
+
+    def __init__(self, content, reset_cache=False):
+        self.content = content
+        self.reset_cache = reset_cache
+        self.soup = BeautifulSoup(self.content, 'html.parser')
+        self.soup_string = str(self.soup)
+        self.find_inlines()
+
+    def find_inlines(self):
+        self.inlines = self.soup.find_all('inline')
+        return self.inlines
+
+    def render(self):
+        for inline in self.inlines:
+            try:
+                rendered_inline = InlineRenderer(inline, self.reset_cache).render()
+            except Exception as e:
+                if settings.INLINES_DEBUG:
+                    raise TemplateSyntaxError('Failed to render inline: %s' % e)
+                else:
+                    rendered_inline = ''
+            self.soup_string = self.soup_string.replace(str(inline), rendered_inline)
+        return mark_safe(self.soup_string)

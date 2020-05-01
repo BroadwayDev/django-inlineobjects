@@ -1,5 +1,5 @@
 from django import template
-from inlines.parser import inlines
+from inlines.parser import ContentParser
 from inlines.models import InlineType
 import re
 
@@ -15,13 +15,13 @@ def render_inlines(value):
 
         {{ post.body|render_inlines|markdown:"safe" }}
 
-    Inline Syntax (singular)::
+    Inline Syntax (single object)::
 
-        <inline type="<app_name>.<model_name>" id="<id>" class="med_left" />
+        <inline type="<app_name>.<model_name>" id="<id>" class="med_left"></inline>
 
-    Inline Syntax (plural)::
+    Inline Syntax (multiple objects)::
 
-        <inline type="<app_name>.<model_name>" ids="<id>, <id>, <id>" />
+        <inline type="<app_name>.<model_name>" id="<id>, <id>, <id>"></inline>
 
     An inline template will be used to render the inline. Templates will be
     located in the following maner:
@@ -41,12 +41,7 @@ def render_inlines(value):
     It would be wise to anticipate both object_list and object unless
     you know for sure one or the other will only be present.
     """
-    return inlines(value)
-
-
-@register.filter
-def extract_inlines(value):
-    return inlines(value, True)
+    return ContentParser(value).render()
 
 
 class InlineTypes(template.Node):
